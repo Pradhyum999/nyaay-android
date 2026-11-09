@@ -1,0 +1,9 @@
+<resources>
+    <color name="obsidian_bg">#0B0F17</color>
+    <color name="gold_primary">#F59E0B</color>
+    <color name="gold_secondary">#D97706</color>
+    <color name="surface_dark">#121824</color>
+    <color name="border_subtle">#1E293B</color>
+    <color name="text_main">#F8FAFC</color>
+    <color name="text_sub">#94A3B8</color>
+</resources>

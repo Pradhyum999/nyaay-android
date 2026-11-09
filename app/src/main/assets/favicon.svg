@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+  <rect width="48" height="48" rx="12" fill="#0A0A0A" />
+  <rect x="1" y="1" width="46" height="46" rx="11" stroke="#F5C563" stroke-opacity="0.3" stroke-width="1.5" />
+  <!-- Center Beam -->
+  <path d="M24 10v26m-6 0h12" stroke="#F5C563" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+  <!-- Top Horizontal Bar -->
+  <path d="M12 15h24" stroke="#F5C563" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+  <!-- Left Scale Pan -->
+  <path d="M12 15l-4 8h8l-4-8zm-4 8a4 4 0 0 0 8 0" stroke="#F5C563" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+  <!-- Right Scale Pan -->
+  <path d="M36 15l-4 8h8l-4-8zm-4 8a4 4 0 0 0 8 0" stroke="#F5C563" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+  <!-- Crown / Finial -->
+  <circle cx="24" cy="9" r="1.5" fill="#F5C563" />
+</svg>

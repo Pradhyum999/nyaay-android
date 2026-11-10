@@ -3,6 +3,8 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.kotlin.ksp)
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -20,6 +22,18 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        // AI / data provider keys. Set these in ~/.gradle/gradle.properties or local.properties:
+        //   NVIDIA_NIM_API_KEY=...
+        //   ECOURTS_API_KEY=...
+        //   ECOURTS_BASE_URL=https://...
+        // Leave blank to run the app in offline fallback mode.
+        val nimApiKey = (project.findProperty("NVIDIA_NIM_API_KEY") as String?) ?: ""
+        val ecourtsApiKey = (project.findProperty("ECOURTS_API_KEY") as String?) ?: ""
+        val ecourtsBaseUrl = (project.findProperty("ECOURTS_BASE_URL") as String?) ?: ""
+        buildConfigField("String", "NVIDIA_NIM_API_KEY", "\"$nimApiKey\"")
+        buildConfigField("String", "ECOURTS_API_KEY", "\"$ecourtsApiKey\"")
+        buildConfigField("String", "ECOURTS_BASE_URL", "\"$ecourtsBaseUrl\"")
     }
 
     buildTypes {
@@ -40,6 +54,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     packaging {
         resources {
@@ -65,6 +80,16 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.coil.compose)
     implementation(libs.androidx.webkit)
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.datastore.preferences)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.messaging)
+    implementation(libs.osmdroid.android)
+    implementation("com.google.android.gms:play-services-auth:21.3.0")
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

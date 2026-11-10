@@ -1,0 +1,96 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+
+    // ---- Users ----
+    match /users/{uid} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && request.auth.uid == uid;
+    }
+
+    // ---- Firms ----
+    match /firms/{firmId} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.adminUid == request.auth.uid;
+      allow update, delete: if signedIn() && resource.data.adminUid == request.auth.uid;
+    }
+
+    // ---- Cases ----
+    match /cases/{caseId} {
+      allow read: if signedIn()
+        && (resource.data.clientUid == request.auth.uid || resource.data.lawyerUid == request.auth.uid);
+      allow create: if signedIn() && request.resource.data.clientUid == request.auth.uid;
+      allow update, delete: if signedIn()
+        && (resource.data.clientUid == request.auth.uid || resource.data.lawyerUid == request.auth.uid);
+    }
+
+    // ---- Chat ----
+    match /conversations/{convoId} {
+      allow read, write: if signedIn()
+        && (resource.data.userA == request.auth.uid || resource.data.userB == request.auth.uid);
+      allow create: if signedIn()
+        && (request.resource.data.userA == request.auth.uid || request.resource.data.userB == request.auth.uid);
+    }
+    match /conversations/{convoId}/messages/{msgId} {
+      allow read: if signedIn()
+        && (resource.data.senderUid == request.auth.uid || resource.data.receiverUid == request.auth.uid);
+      allow create: if signedIn() && request.resource.data.senderUid == request.auth.uid;
+      allow update: if signedIn() && resource.data.receiverUid == request.auth.uid;
+    }
+
+    // ---- Consultations ----
+    match /consultations/{id} {
+      allow read: if signedIn()
+        && (resource.data.citizenUid == request.auth.uid || resource.data.lawyerUid == request.auth.uid);
+      allow create: if signedIn() && request.resource.data.citizenUid == request.auth.uid;
+      allow update: if signedIn()
+        && (resource.data.citizenUid == request.auth.uid || resource.data.lawyerUid == request.auth.uid);
+    }
+
+    // ---- Internships ----
+    match /internships/{id} {
+      allow read: if signedIn();
+      allow create, update, delete: if signedIn();
+    }
+    match /internships/{id}/applications/{appId} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.studentUid == request.auth.uid;
+      allow update, delete: if signedIn();
+    }
+
+    // ---- Forum ----
+    match /posts/{id} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.authorUid == request.auth.uid;
+      allow update, delete: if signedIn() && resource.data.authorUid == request.auth.uid;
+    }
+    match /posts/{id}/comments/{commentId} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.authorUid == request.auth.uid;
+      allow delete: if signedIn() && resource.data.authorUid == request.auth.uid;
+    }
+
+    // ---- Notifications (per-user subcollection) ----
+    match /users/{uid}/notifications/{id} {
+      allow read, create, update, delete: if signedIn() && request.auth.uid == uid;
+    }
+
+    // ---- Reviews ----
+    match /reviews/{id} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.citizenUid == request.auth.uid;
+    }
+
+    // ---- Subscriptions & Payments ----
+    match /subscriptions/{id} {
+      allow read, create, update: if signedIn() && request.resource.data.ownerUid == request.auth.uid;
+    }
+    match /payments/{id} {
+      allow read: if signedIn()
+        && (resource.data.payerUid == request.auth.uid || resource.data.payeeUid == request.auth.uid);
+      allow create: if signedIn() && request.resource.data.payerUid == request.auth.uid;
+    }
+  }
+}

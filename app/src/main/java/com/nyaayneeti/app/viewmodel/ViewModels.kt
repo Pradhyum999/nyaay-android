@@ -2,132 +2,122 @@ package com.nyaayneeti.app.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import android.app.Activity
 import com.nyaayneeti.app.data.model.*
-import com.nyaayneeti.app.data.repository.AuthRepository
-import com.nyaayneeti.app.data.repository.CaseRepository
-import com.nyaayneeti.app.data.repository.GeminiIntakeRepository
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import com.nyaayneeti.app.data.repository.*
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
-    val currentUser = authRepository.currentUser
-    val selectedLanguage = authRepository.selectedLanguage
+class AuthViewModel(private val auth: AuthRepository) : ViewModel() {
+    val currentUser = auth.currentUser
+    val selectedLanguage = auth.selectedLanguage
+    val themeMode = auth.themeMode
+    val sessionLoaded = auth.sessionLoaded
+    val verifiedLawyers = auth.verifiedLawyers
 
-    private val _phoneInput = MutableStateFlow("")
-    val phoneInput: StateFlow<String> = _phoneInput.asStateFlow()
+    private val _phone = MutableStateFlow("")
+    val phone = _phone.asStateFlow()
+    private val _otp = MutableStateFlow("")
+    val otp = _otp.asStateFlow()
+    private val _role = MutableStateFlow(UserRole.CITIZEN)
+    val role = _role.asStateFlow()
+    private val _loading = MutableStateFlow(false)
+    val loading = _loading.asStateFlow()
+    private val _error = MutableStateFlow<String?>(null)
+    val error = _error.asStateFlow()
 
-    private val _otpInput = MutableStateFlow("")
-    val otpInput: StateFlow<String> = _otpInput.asStateFlow()
-
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
-
-    private val _errorMessage = MutableStateFlow<String?>(null)
-    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
-
-    private val _selectedRole = MutableStateFlow(UserRole.CITIZEN)
-    val selectedRole: StateFlow<UserRole> = _selectedRole.asStateFlow()
-
-    fun setLanguage(language: Language) {
-        authRepository.setLanguage(language)
-    }
-
-    fun selectRole(role: UserRole) {
-        _selectedRole.value = role
-        _errorMessage.value = null
-    }
-
-    fun onPhoneChange(value: String) {
-        val digits = value.filter { it.isDigit() }
-        _phoneInput.value = digits.takeLast(10)
-        _errorMessage.value = null
-    }
-
-    fun onOtpChange(value: String) {
-        val digits = value.filter { it.isDigit() }
-        _otpInput.value = digits.take(6)
-        _errorMessage.value = null
-    }
-
-    fun sendOtp(onSuccess: () -> Unit) {
+    fun setLanguage(code: String) = auth.setLanguage(code)
+    fun setThemeMode(mode: String) = auth.setThemeMode(mode)
+    fun selectRole(r: UserRole) { _role.value = r; _error.value = null }
+    fun applyRole(onDone: () -> Unit) {
         viewModelScope.launch {
-            _isLoading.value = true
-            _errorMessage.value = null
-            val result = authRepository.sendOtp(_phoneInput.value)
-            _isLoading.value = false
-            result.onSuccess { onSuccess() }
-                .onFailure { _errorMessage.value = it.message ?: "Failed to send OTP" }
+            auth.updateRole(_role.value)
+            onDone()
+        }
+    }
+    fun onPhone(v: String) { _phone.value = v.filter { it.isDigit() }.takeLast(10) }
+    fun onOtp(v: String) { _otp.value = v.filter { it.isDigit() }.take(6) }
+
+    fun sendOtp(activity: Activity, onSuccess: () -> Unit) {
+        _loading.value = true; _error.value = null
+        auth.sendOtp(_phone.value, activity,
+            onCodeSent = { _loading.value = false; onSuccess() },
+            onError = { _error.value = it; _loading.value = false }
+        )
+    }
+
+    fun verifyOtp(onSuccess: (UserEntity) -> Unit) {
+        viewModelScope.launch {
+            _loading.value = true; _error.value = null
+            auth.verifyOtp(_phone.value, _otp.value, _role.value).onSuccess { onSuccess(it) }.onFailure { _error.value = it.message }
+            _loading.value = false
         }
     }
 
-    fun verifyOtp(onSuccess: () -> Unit) {
+    fun signInWithGoogle(idToken: String, email: String?, name: String?, onSuccess: (UserEntity) -> Unit) {
         viewModelScope.launch {
-            _isLoading.value = true
-            _errorMessage.value = null
-            val result = authRepository.verifyOtp(_phoneInput.value, _otpInput.value, _selectedRole.value)
-            _isLoading.value = false
-            result.onSuccess { onSuccess() }
-                .onFailure { _errorMessage.value = it.message ?: "Invalid OTP code" }
+            _loading.value = true
+            _error.value = null
+            auth.signInWithGoogle(idToken, email, name, _role.value)
+                .onSuccess { onSuccess(it) }
+                .onFailure { _error.value = it.message ?: "Google sign-in failed" }
+            _loading.value = false
         }
     }
 
-    fun signOut() {
-        authRepository.signOut()
-    }
+    fun signOut() = auth.signOut()
 }
 
-class CaseViewModel(private val caseRepository: CaseRepository) : ViewModel() {
-    val cases = caseRepository.cases
-    val timeline = caseRepository.timeline
-    val tasks = caseRepository.tasks
-    val hearings = caseRepository.hearings
-    val notes = caseRepository.notes
-
-    private val _selectedCaseId = MutableStateFlow("case-101")
-    val selectedCaseId: StateFlow<String> = _selectedCaseId.asStateFlow()
-
-    fun selectCase(caseId: String) {
-        _selectedCaseId.value = caseId
-    }
-
-    fun toggleTask(caseId: String, taskId: String) {
-        caseRepository.toggleTask(caseId, taskId)
-    }
-
-    fun addNote(caseId: String, content: String, author: String) {
-        caseRepository.addNote(caseId, content, author)
-    }
-}
-
-class AIIntakeViewModel(
-    private val geminiRepository: GeminiIntakeRepository,
-    private val caseRepository: CaseRepository
+class OnboardingViewModel(
+    private val auth: AuthRepository,
+    private val firm: FirmRepository
 ) : ViewModel() {
-    val messages = geminiRepository.messages
-    val currentProfile = geminiRepository.currentProfile
-    val isGenerating = geminiRepository.isGenerating
+    val name = MutableStateFlow("")
+    val email = MutableStateFlow("")
+    val state = MutableStateFlow("")
+    val city = MutableStateFlow("")
+    val barCouncilId = MutableStateFlow("")
+    val specialization = MutableStateFlow("")
+    val experience = MutableStateFlow("")
+    val bio = MutableStateFlow("")
+    val firmName = MutableStateFlow("")
+    val firmCity = MutableStateFlow("")
+    val firmAddress = MutableStateFlow("")
+    val firmGstin = MutableStateFlow("")
+    val college = MutableStateFlow("")
+    val yearOfStudy = MutableStateFlow("")
+    private val _saving = MutableStateFlow(false)
+    val saving = _saving.asStateFlow()
 
-    private val _inputText = MutableStateFlow("")
-    val inputText: StateFlow<String> = _inputText.asStateFlow()
-
-    fun onInputChange(text: String) {
-        _inputText.value = text
-    }
-
-    fun sendUserMessage() {
-        val text = _inputText.value.trim()
-        if (text.isEmpty()) return
-        _inputText.value = ""
+    fun save(role: UserRole, onDone: () -> Unit) {
+        val u = auth.currentUser.value ?: return
         viewModelScope.launch {
-            geminiRepository.sendMessage(text)
+            _saving.value = true
+            var updated = u.copy(
+                name = name.value.ifBlank { u.name },
+                email = email.value.ifBlank { null },
+                state = state.value.ifBlank { null },
+                city = city.value.ifBlank { null },
+                barCouncilId = barCouncilId.value.ifBlank { u.barCouncilId },
+                specializations = if (specialization.value.isBlank()) u.specializations
+                    else specialization.value.split(",").map { it.trim() }.joinToString(", ") { "\"$it\"" }.let { "[$it]" },
+                experienceYears = experience.value.toIntOrNull() ?: u.experienceYears,
+                bio = bio.value.ifBlank { u.bio },
+                college = college.value.ifBlank { u.college },
+                yearOfStudy = yearOfStudy.value.ifBlank { u.yearOfStudy },
+                verificationStatus = if (role == UserRole.INDEPENDENT_LAWYER || role == UserRole.FIRM_ADMIN || role == UserRole.FIRM_MEMBER) VerificationStatus.PENDING else u.verificationStatus
+            )
+            if (role == UserRole.FIRM_ADMIN && u.firmId == null && firmName.value.isNotBlank()) {
+                firm.createFirm(firmName.value, updated, firmCity.value.ifBlank { null }, firmAddress.value.ifBlank { null }, firmGstin.value.ifBlank { null })
+                updated = auth.currentUser.value ?: updated
+            }
+            if (role == UserRole.FIRM_MEMBER && email.value.isNotBlank()) {
+                updated = firm.acceptInvitation(email.value, updated) ?: updated
+            }
+            auth.updateProfile(updated)
+            auth.completeOnboarding(updated.uid)
+            _saving.value = false
+            onDone()
         }
-    }
-
-    fun createCaseRoom(clientName: String, clientPhone: String, onCaseCreated: (String) -> Unit) {
-        val profile = currentProfile.value ?: return
-        val caseId = caseRepository.createCaseFromProfile(clientName, clientPhone, profile)
-        onCaseCreated(caseId)
     }
 }

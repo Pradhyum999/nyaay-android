@@ -17,6 +17,7 @@ interface VerificationDao {
 @Dao
 interface ReportDao {
     @Query("SELECT * FROM reports ORDER BY createdAt DESC") fun observeAll(): Flow<List<ReportEntity>>
+    @Query("SELECT * FROM reports WHERE id = :id") suspend fun get(id: String): ReportEntity?
     @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun upsert(r: ReportEntity)
     @Query("UPDATE reports SET status = :status WHERE id = :id") suspend fun setStatus(id: String, status: ReportStatus)
 }

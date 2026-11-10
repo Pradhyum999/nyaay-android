@@ -15,7 +15,12 @@ class CloudSync(internal val db: FirebaseFirestore) {
                 "uid" to u.uid, "phone" to u.phone, "name" to u.name, "email" to u.email,
                 "role" to u.role.name, "firmId" to u.firmId, "firmRole" to u.firmRole?.name,
                 "barCouncilId" to u.barCouncilId, "verificationStatus" to u.verificationStatus.name,
-                "specializations" to u.specializations, "bio" to u.bio, "experienceYears" to u.experienceYears,
+                "specializations" to u.specializations, "practiceAreas" to u.practiceAreas, "languages" to u.languages,
+                "feeMin" to u.feeMin, "feeMax" to u.feeMax, "education" to u.education,
+                "barAssociation" to u.barAssociation, "aibeCertificateNo" to u.aibeCertificateNo,
+                "practiceCourts" to u.practiceCourts, "practiceType" to u.practiceType.name,
+                "chambersAddress" to u.chambersAddress, "chamberLat" to u.chamberLat, "chamberLng" to u.chamberLng,
+                "bio" to u.bio, "experienceYears" to u.experienceYears,
                 "state" to u.state, "city" to u.city, "language" to u.language,
                 "onboardingCompleted" to u.onboardingCompleted, "college" to u.college, "yearOfStudy" to u.yearOfStudy,
                 "avgRating" to u.avgRating, "reviewCount" to u.reviewCount, "createdAt" to u.createdAt
@@ -40,10 +45,59 @@ class CloudSync(internal val db: FirebaseFirestore) {
                 "clientUid" to c.clientUid, "clientName" to c.clientName, "clientPhone" to c.clientPhone,
                 "firmId" to c.firmId, "lawyerUid" to c.lawyerUid, "lawyerName" to c.lawyerName,
                 "court" to c.court, "matterType" to c.matterType, "legalArea" to c.legalArea,
-                "location" to c.location, "stage" to c.stage.name, "priority" to c.priority.name,
+                "location" to c.location, "cnrNumber" to c.cnrNumber, "filingNumber" to c.filingNumber, "judge" to c.judge,
+                "stage" to c.stage.name, "priority" to c.priority.name,
                 "status" to c.status.name, "nextHearingDate" to c.nextHearingDate,
-                "factsJson" to c.factsJson, "summaryText" to c.summaryText,
+                "factsJson" to c.factsJson, "summaryText" to c.summaryText, "isDeleted" to c.isDeleted,
                 "createdAt" to c.createdAt, "updatedAt" to c.updatedAt
+            )
+        )
+    }
+
+    fun pushTimeline(t: TimelineEventEntity) {
+        db.collection("case_timeline_events").document(t.id).set(
+            hashMapOf(
+                "id" to t.id, "caseId" to t.caseId, "type" to t.type, "titleEn" to t.titleEn,
+                "descriptionEn" to t.descriptionEn, "eventDate" to t.eventDate, "actor" to t.actor, "createdAt" to t.createdAt
+            )
+        )
+    }
+
+    fun pushTask(t: CaseTaskEntity) {
+        db.collection("case_tasks").document(t.id).set(
+            hashMapOf(
+                "id" to t.id, "caseId" to t.caseId, "title" to t.title, "assignedTo" to t.assignedTo,
+                "isCompleted" to t.isCompleted, "dueDate" to t.dueDate, "createdAt" to t.createdAt
+            )
+        )
+    }
+
+    fun pushNote(n: CaseNoteEntity) {
+        db.collection("case_notes").document(n.id).set(
+            hashMapOf(
+                "id" to n.id, "caseId" to n.caseId, "content" to n.content, "authorUid" to n.authorUid,
+                "authorName" to n.authorName, "isPrivate" to n.isPrivate, "createdAt" to n.createdAt
+            )
+        )
+    }
+
+    fun pushDocument(d: DocumentEntity) {
+        db.collection("documents").document(d.id).set(
+            hashMapOf(
+                "id" to d.id, "caseId" to d.caseId, "ownerUid" to d.ownerUid, "name" to d.name,
+                "uri" to d.uri, "mimeType" to d.mimeType, "sizeBytes" to d.sizeBytes,
+                "category" to d.category, "status" to d.status.name, "uploadedBy" to d.uploadedBy, "uploadedAt" to d.uploadedAt
+            )
+        )
+    }
+
+    fun pushHearing(h: HearingEntity) {
+        db.collection("hearings").document(h.id).set(
+            hashMapOf(
+                "id" to h.id, "caseId" to h.caseId, "caseNumber" to h.caseNumber,
+                "courtNumber" to h.courtNumber, "itemNumber" to h.itemNumber, "stage" to h.stage,
+                "hearingDate" to h.hearingDate, "hearingTime" to h.hearingTime, "purpose" to h.purpose,
+                "judgeName" to h.judgeName, "orderNotes" to h.orderNotes, "status" to h.status.name
             )
         )
     }
@@ -52,13 +106,14 @@ class CloudSync(internal val db: FirebaseFirestore) {
         db.collection("conversations").document(c.id).set(
             hashMapOf(
                 "id" to c.id, "userA" to c.userA, "userB" to c.userB,
-                "lastMessage" to c.lastMessage, "lastMessageAt" to c.lastMessageAt, "lastSenderUid" to c.lastSenderUid
+                "lastMessage" to c.lastMessage, "lastMessageAt" to c.lastMessageAt, "lastSenderUid" to c.lastSenderUid,
+                "caseId" to c.caseId
             )
         )
     }
 
     fun pushMessage(convoId: String, m: MessageEntity) {
-        db.collection("conversations").document(convoId).collection("messages").document(m.id).set(
+        db.collection("messages").document(m.id).set(
             hashMapOf(
                 "id" to m.id, "conversationId" to m.conversationId,
                 "senderUid" to m.senderUid, "receiverUid" to m.receiverUid,
@@ -91,7 +146,7 @@ class CloudSync(internal val db: FirebaseFirestore) {
     }
 
     fun pushApplication(a: InternshipApplicationEntity) {
-        db.collection("internships").document(a.internshipId).collection("applications").document(a.id).set(
+        db.collection("applications").document(a.id).set(
             hashMapOf(
                 "id" to a.id, "internshipId" to a.internshipId, "studentUid" to a.studentUid,
                 "studentName" to a.studentName, "coverLetter" to a.coverLetter,

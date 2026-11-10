@@ -29,10 +29,10 @@ interface FirmDao {
 interface CaseDao {
     @Query("SELECT * FROM cases WHERE id = :id") fun observe(id: String): Flow<CaseEntity?>
     @Query("SELECT * FROM cases WHERE id = :id") suspend fun get(id: String): CaseEntity?
-    @Query("SELECT * FROM cases WHERE clientUid = :uid ORDER BY updatedAt DESC") fun observeByClient(uid: String): Flow<List<CaseEntity>>
-    @Query("SELECT * FROM cases WHERE lawyerUid = :uid ORDER BY updatedAt DESC") fun observeByLawyer(uid: String): Flow<List<CaseEntity>>
-    @Query("SELECT * FROM cases WHERE firmId = :firmId ORDER BY updatedAt DESC") fun observeByFirm(firmId: String): Flow<List<CaseEntity>>
-    @Query("SELECT * FROM cases WHERE firmId = :firmId AND lawyerUid = :uid ORDER BY updatedAt DESC")
+    @Query("SELECT * FROM cases WHERE clientUid = :uid AND isDeleted = 0 ORDER BY updatedAt DESC") fun observeByClient(uid: String): Flow<List<CaseEntity>>
+    @Query("SELECT * FROM cases WHERE lawyerUid = :uid AND isDeleted = 0 ORDER BY updatedAt DESC") fun observeByLawyer(uid: String): Flow<List<CaseEntity>>
+    @Query("SELECT * FROM cases WHERE firmId = :firmId AND isDeleted = 0 ORDER BY updatedAt DESC") fun observeByFirm(firmId: String): Flow<List<CaseEntity>>
+    @Query("SELECT * FROM cases WHERE firmId = :firmId AND lawyerUid = :uid AND isDeleted = 0 ORDER BY updatedAt DESC")
     fun observeByMember(firmId: String, uid: String): Flow<List<CaseEntity>>
     @Query("SELECT * FROM cases WHERE clientUid = :uid AND lawyerUid IS NULL AND isDeleted = 0 ORDER BY updatedAt DESC")
     fun observeUnassignedByClient(uid: String): Flow<List<CaseEntity>>
@@ -47,27 +47,28 @@ interface CaseDao {
 @Dao
 interface TimelineDao {
     @Query("SELECT * FROM case_timeline_events WHERE caseId = :caseId ORDER BY createdAt DESC") fun observe(caseId: String): Flow<List<TimelineEventEntity>>
-    @Insert suspend fun insert(event: TimelineEventEntity)
+    @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun insert(event: TimelineEventEntity)
 }
 
 @Dao
 interface TaskDao {
     @Query("SELECT * FROM case_tasks WHERE caseId = :caseId ORDER BY createdAt ASC") fun observe(caseId: String): Flow<List<CaseTaskEntity>>
     @Query("SELECT * FROM case_tasks WHERE id = :id") suspend fun get(id: String): CaseTaskEntity?
-    @Insert suspend fun insert(task: CaseTaskEntity)
+    @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun insert(task: CaseTaskEntity)
     @Update suspend fun update(task: CaseTaskEntity)
 }
 
 @Dao
 interface NoteDao {
     @Query("SELECT * FROM case_notes WHERE caseId = :caseId ORDER BY createdAt DESC") fun observe(caseId: String): Flow<List<CaseNoteEntity>>
-    @Insert suspend fun insert(note: CaseNoteEntity)
+    @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun insert(note: CaseNoteEntity)
 }
 
 @Dao
 interface DocumentDao {
     @Query("SELECT * FROM documents WHERE caseId = :caseId ORDER BY uploadedAt DESC") fun observe(caseId: String): Flow<List<DocumentEntity>>
-    @Insert suspend fun insert(doc: DocumentEntity)
+    @Query("SELECT * FROM documents WHERE id = :id") suspend fun get(id: String): DocumentEntity?
+    @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun insert(doc: DocumentEntity)
     @Query("UPDATE documents SET status = :status WHERE id = :id") suspend fun setStatus(id: String, status: DocumentStatus)
 }
 
@@ -76,7 +77,8 @@ interface HearingDao {
     @Query("SELECT * FROM hearings WHERE hearingDate = :day ORDER BY itemNumber ASC") fun observeByDay(day: Long): Flow<List<HearingEntity>>
     @Query("SELECT * FROM hearings WHERE caseId = :caseId ORDER BY hearingDate DESC") fun observeByCase(caseId: String): Flow<List<HearingEntity>>
     @Query("SELECT * FROM hearings ORDER BY hearingDate ASC") fun observeAll(): Flow<List<HearingEntity>>
+    @Query("SELECT * FROM hearings WHERE id = :id") suspend fun get(id: String): HearingEntity?
     @Query("SELECT COUNT(*) FROM hearings WHERE caseId = :caseId AND hearingDate = :d AND hearingTime = :t") suspend fun countDuplicate(caseId: String, d: Long, t: String): Int
-    @Insert suspend fun insert(hearing: HearingEntity)
+    @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun insert(hearing: HearingEntity)
     @Query("UPDATE hearings SET status = :status, orderNotes = :order WHERE id = :id") suspend fun logOrder(id: String, status: HearingStatus, order: String)
 }

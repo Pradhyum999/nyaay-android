@@ -88,7 +88,7 @@ class AuthRepository(
         }
 
         val existing = userDao.getByPhone(full)
-        val user = existing?.copy(role = chosenRole, language = _selectedLanguage.value)
+        val user = existing?.copy(language = _selectedLanguage.value)
             ?: UserEntity(
                 uid = uid,
                 phone = full,
@@ -115,7 +115,7 @@ class AuthRepository(
         }
 
         val existing = userDao.getById(uid)
-        val user = existing?.copy(role = chosenRole, language = _selectedLanguage.value)
+        val user = existing?.copy(language = _selectedLanguage.value)
             ?: UserEntity(
                 uid = uid,
                 phone = phoneNum,

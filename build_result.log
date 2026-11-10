@@ -6,9 +6,9 @@
 > Task :app:generateDebugBuildConfig
 > Task :app:generateDebugResValues
 > Task :app:processDebugGoogleServices
-> Task :app:checkDebugAarMetadata
 > Task :app:mapDebugSourceSetPaths
 > Task :app:generateDebugResources
+> Task :app:checkDebugAarMetadata
 > Task :app:packageDebugResources
 > Task :app:createDebugCompatibleScreenManifests
 > Task :app:extractDeepLinksDebug
@@ -22,20 +22,20 @@
 > Task :app:javaPreCompileDebug
 > Task :app:mergeDebugAssets
 > Task :app:desugarDebugFileDependencies
-> Task :app:mergeDebugJniLibFolders
 > Task :app:compressDebugAssets
+> Task :app:mergeDebugJniLibFolders
 > Task :app:validateSigningDebug
-> Task :app:writeDebugAppMetadata
 > Task :app:mergeDebugNativeLibs
+> Task :app:writeDebugAppMetadata
 > Task :app:writeDebugSigningConfigVersions
 > Task :app:preDebugUnitTestBuild UP-TO-DATE
 > Task :app:javaPreCompileDebugUnitTest
 > Task :app:processDebugManifestForPackage
-> Task :app:checkDebugDuplicateClasses
 
 > Task :app:stripDebugDebugSymbols
 Unable to strip the following libraries, packaging them as they are: libandroidx.graphics.path.so, libdatastore_shared_counter.so.
 
+> Task :app:checkDebugDuplicateClasses
 > Task :app:mergeLibDexDebug
 > Task :app:processDebugResources
 > Task :app:mergeExtDexDebug
@@ -45,10 +45,10 @@ Unable to strip the following libraries, packaging them as they are: libandroidx
 w: file:///C:/Users/pradh/Documents/antigravity/nyaay-android/app/src/main/java/com/nyaayneeti/app/ui/screens/admin/AdminHomeScreen.kt:30:146 'val Icons.Filled.ExitToApp: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ExitToApp.
 w: file:///C:/Users/pradh/Documents/antigravity/nyaay-android/app/src/main/java/com/nyaayneeti/app/ui/screens/auth/AuthScreens2.kt:19:8 'class GoogleSignIn : Any' is deprecated. Deprecated in Java.
 w: file:///C:/Users/pradh/Documents/antigravity/nyaay-android/app/src/main/java/com/nyaayneeti/app/ui/screens/auth/AuthScreens2.kt:20:8 'class GoogleSignInOptions : AbstractSafeParcelable, Api.ApiOptions.Optional, ReflectedParcelable' is deprecated. Deprecated in Java.
-w: file:///C:/Users/pradh/Documents/antigravity/nyaay-android/app/src/main/java/com/nyaayneeti/app/ui/screens/auth/AuthScreens2.kt:45:27 'class GoogleSignIn : Any' is deprecated. Deprecated in Java.
-w: file:///C:/Users/pradh/Documents/antigravity/nyaay-android/app/src/main/java/com/nyaayneeti/app/ui/screens/auth/AuthScreens2.kt:79:35 'class GoogleSignInOptions : AbstractSafeParcelable, Api.ApiOptions.Optional, ReflectedParcelable' is deprecated. Deprecated in Java.
-w: file:///C:/Users/pradh/Documents/antigravity/nyaay-android/app/src/main/java/com/nyaayneeti/app/ui/screens/auth/AuthScreens2.kt:79:63 'class GoogleSignInOptions : AbstractSafeParcelable, Api.ApiOptions.Optional, ReflectedParcelable' is deprecated. Deprecated in Java.
-w: file:///C:/Users/pradh/Documents/antigravity/nyaay-android/app/src/main/java/com/nyaayneeti/app/ui/screens/auth/AuthScreens2.kt:81:53 'class GoogleSignIn : Any' is deprecated. Deprecated in Java.
+w: file:///C:/Users/pradh/Documents/antigravity/nyaay-android/app/src/main/java/com/nyaayneeti/app/ui/screens/auth/AuthScreens2.kt:46:27 'class GoogleSignIn : Any' is deprecated. Deprecated in Java.
+w: file:///C:/Users/pradh/Documents/antigravity/nyaay-android/app/src/main/java/com/nyaayneeti/app/ui/screens/auth/AuthScreens2.kt:80:35 'class GoogleSignInOptions : AbstractSafeParcelable, Api.ApiOptions.Optional, ReflectedParcelable' is deprecated. Deprecated in Java.
+w: file:///C:/Users/pradh/Documents/antigravity/nyaay-android/app/src/main/java/com/nyaayneeti/app/ui/screens/auth/AuthScreens2.kt:80:63 'class GoogleSignInOptions : AbstractSafeParcelable, Api.ApiOptions.Optional, ReflectedParcelable' is deprecated. Deprecated in Java.
+w: file:///C:/Users/pradh/Documents/antigravity/nyaay-android/app/src/main/java/com/nyaayneeti/app/ui/screens/auth/AuthScreens2.kt:82:53 'class GoogleSignIn : Any' is deprecated. Deprecated in Java.
 w: file:///C:/Users/pradh/Documents/antigravity/nyaay-android/app/src/main/java/com/nyaayneeti/app/ui/screens/chat/ChatScreens.kt:29:38 'val Icons.Filled.Chat: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Chat.
 w: file:///C:/Users/pradh/Documents/antigravity/nyaay-android/app/src/main/java/com/nyaayneeti/app/ui/screens/citizen/CitizenScreens.kt:34:107 'val Icons.Filled.Chat: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Chat.
 w: file:///C:/Users/pradh/Documents/antigravity/nyaay-android/app/src/main/java/com/nyaayneeti/app/ui/screens/citizen/CitizenScreens5.kt:31:116 'val Icons.Filled.Send: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Send.
@@ -62,17 +62,17 @@ w: file:///C:/Users/pradh/Documents/antigravity/nyaay-android/app/src/main/java/
 > Task :app:processDebugJavaRes
 > Task :app:mergeDebugGlobalSynthetics
 > Task :app:mergeProjectDexDebug
-> Task :app:bundleDebugClassesToRuntimeJar
 > Task :app:bundleDebugClassesToCompileJar
-> Task :app:mergeDebugJavaResource
-> Task :app:packageDebug
-> Task :app:createDebugApkListingFileRedirect
-> Task :app:assembleDebug
+> Task :app:bundleDebugClassesToRuntimeJar
 > Task :app:kspDebugUnitTestKotlin
 > Task :app:compileDebugUnitTestKotlin
 > Task :app:compileDebugUnitTestJavaWithJavac NO-SOURCE
 > Task :app:processDebugUnitTestJavaRes
+> Task :app:mergeDebugJavaResource
 > Task :app:testDebugUnitTest
+> Task :app:packageDebug
+> Task :app:createDebugApkListingFileRedirect
+> Task :app:assembleDebug
 
-BUILD SUCCESSFUL in 50s
+BUILD SUCCESSFUL in 1m
 47 actionable tasks: 47 executed

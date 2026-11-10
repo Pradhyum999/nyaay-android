@@ -41,8 +41,8 @@ class AppContainer(context: Context) {
     val intakeEngine: AIIntakeEngine = NimIntakeEngine(apiKey = BuildConfig.NVIDIA_NIM_API_KEY)
     val ecourtsClient = ECourtsClient(apiKey = BuildConfig.ECOURTS_API_KEY, baseUrl = BuildConfig.ECOURTS_BASE_URL)
     val caseAIClient = CaseAIClient(NimChatClient(BuildConfig.NVIDIA_NIM_API_KEY))
-    val verificationRepository = VerificationRepository(database.verificationDao(), database.userDao(), notifications)
-    val moderationRepository = ModerationRepository(database.reportDao(), database.blockDao())
+    val verificationRepository = VerificationRepository(database.verificationDao(), database.userDao(), notifications, cloudSync)
+    val moderationRepository = ModerationRepository(database.reportDao(), database.blockDao(), cloudSync)
 
     suspend fun seedIfEmpty() {
         if (database.userDao().all().isNotEmpty()) return

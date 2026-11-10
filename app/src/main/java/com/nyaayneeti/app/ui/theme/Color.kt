@@ -31,30 +31,30 @@ data class NyaayPalette(
  */
 val OnPrimary = Color(0xFF0B0F17)
 
-/** Obsidian (dark) signature palette. */
+/** Obsidian (dark) signature palette — matches the web app: pure black + warm gold #F5C563 + glass surfaces. */
 val DarkPalette = NyaayPalette(
-    background = Color(0xFF0B0F17),
-    surface = Color(0xFF121824),
-    surfaceElevated = Color(0xFF1A2234),
-    border = Color(0xFF1E293B),
-    primary = Color(0xFFF59E0B),
-    primarySecondary = Color(0xFFD97706),
-    primaryContainer = Color(0x26F59E0B),
+    background = Color(0xFF000000),
+    surface = Color(0xFF0B0C11),
+    surfaceElevated = Color(0xFF15161D),
+    border = Color(0xFF1A1B21),
+    primary = Color(0xFFF5C563),
+    primarySecondary = Color(0xFFD4A13E),
+    primaryContainer = Color(0x2EF5C563),
     success = Color(0xFF10B981),
     successContainer = Color(0x2610B981),
     urgent = Color(0xFFEF4444),
     urgentContainer = Color(0x26EF4444),
-    textMain = Color(0xFFF8FAFC),
-    textSub = Color(0xFF94A3B8),
-    textFaint = Color(0xFF64748B),
+    textMain = Color(0xFFFFFFFF),
+    textSub = Color(0xFF9496A1),
+    textFaint = Color(0xFF5A5D6B),
 )
 
-/** White (light) palette — high contrast, no hidden text. */
+/** White (light) palette — clean slate, warm amber accent, no hidden text. */
 val LightPalette = NyaayPalette(
-    background = Color(0xFFFFFFFF),
+    background = Color(0xFFF8FAFC),
     surface = Color(0xFFFFFFFF),
-    surfaceElevated = Color(0xFFF1F5F9),
-    border = Color(0xFFE2E8F0),
+    surfaceElevated = Color(0xFFEFF2F6),
+    border = Color(0xFFE4E7EC),
     primary = Color(0xFFB45309),
     primarySecondary = Color(0xFFD97706),
     primaryContainer = Color(0x1AF59E0B),
@@ -63,8 +63,8 @@ val LightPalette = NyaayPalette(
     urgent = Color(0xFFDC2626),
     urgentContainer = Color(0x1AEF4444),
     textMain = Color(0xFF0F172A),
-    textSub = Color(0xFF475569),
-    textFaint = Color(0xFF64748B),
+    textSub = Color(0xFF4B5563),
+    textFaint = Color(0xFF6B7280),
 )
 
 val LocalNyaayPalette = staticCompositionLocalOf { DarkPalette }

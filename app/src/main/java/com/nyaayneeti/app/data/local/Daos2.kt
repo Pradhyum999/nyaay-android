@@ -19,7 +19,7 @@ interface MessageDao {
     fun observeUnread(convoId: String, me: String): Flow<Int>
     @Query("UPDATE messages SET isRead = 1 WHERE conversationId = :convoId AND receiverUid = :me AND isRead = 0")
     suspend fun markRead(convoId: String, me: String)
-    @Insert suspend fun insert(msg: MessageEntity)
+    @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun insert(msg: MessageEntity)
 }
 
 @Dao

@@ -2,6 +2,7 @@ package com.nyaayneeti.app
 
 import android.app.Application
 import com.nyaayneeti.app.data.firebase.FirebaseModule
+import com.nyaayneeti.app.data.firebase.SyncEngine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -21,5 +22,8 @@ class NyaayApplication : Application() {
         Configuration.getInstance().userAgentValue = packageName
         container = AppContainer(this)
         appScope.launch { container.seedIfEmpty() }
+        if (container.firebaseEnabled) {
+            SyncEngine(container.database, FirebaseModule.firestore, appScope).start()
+        }
     }
 }

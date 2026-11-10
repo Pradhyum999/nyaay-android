@@ -18,7 +18,7 @@ interface PostDao {
 @Dao
 interface CommentDao {
     @Query("SELECT * FROM forum_comments WHERE postId = :postId ORDER BY createdAt ASC") fun observe(postId: String): Flow<List<CommentEntity>>
-    @Insert suspend fun insert(c: CommentEntity)
+    @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun insert(c: CommentEntity)
     @Query("DELETE FROM forum_comments WHERE id = :id") suspend fun delete(id: String)
 }
 
@@ -32,7 +32,7 @@ interface LikeDao {
 @Dao
 interface ReviewDao {
     @Query("SELECT * FROM reviews WHERE lawyerUid = :uid ORDER BY createdAt DESC") fun observeForLawyer(uid: String): Flow<List<ReviewEntity>>
-    @Insert suspend fun insert(review: ReviewEntity)
+    @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun insert(review: ReviewEntity)
     @Query("SELECT AVG(rating) FROM reviews WHERE lawyerUid = :uid") suspend fun avgRating(uid: String): Double?
     @Query("SELECT COUNT(*) FROM reviews WHERE lawyerUid = :uid") suspend fun count(uid: String): Int
 }
@@ -41,7 +41,7 @@ interface ReviewDao {
 interface NotificationDao {
     @Query("SELECT * FROM notifications WHERE uid = :uid ORDER BY createdAt DESC") fun observeFor(uid: String): Flow<List<NotificationEntity>>
     @Query("SELECT COUNT(*) FROM notifications WHERE uid = :uid AND isRead = 0") fun observeUnread(uid: String): Flow<Int>
-    @Insert suspend fun insert(n: NotificationEntity)
+    @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun insert(n: NotificationEntity)
     @Query("UPDATE notifications SET isRead = 1 WHERE id = :id") suspend fun markRead(id: String)
     @Query("UPDATE notifications SET isRead = 1 WHERE uid = :uid") suspend fun markAllRead(uid: String)
 }

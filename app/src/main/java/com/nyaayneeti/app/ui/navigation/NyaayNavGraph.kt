@@ -1,8 +1,23 @@
 package com.nyaayneeti.app.ui.navigation
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Text
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.nyaayneeti.app.ui.components.ShimmerBox
+import com.nyaayneeti.app.ui.theme.GoldPrimary
+import com.nyaayneeti.app.ui.theme.ObsidianBackground
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -110,8 +125,14 @@ fun NyaayNavGraph(container: AppContainer) {
     val currentUser by authVm.currentUser.collectAsState()
 
     if (!sessionLoaded) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator(color = androidx.compose.ui.graphics.Color(0xFFF59E0B))
+        Box(Modifier.fillMaxSize().background(ObsidianBackground), contentAlignment = Alignment.Center) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text("⚖", fontSize = 56.sp, color = GoldPrimary)
+                Spacer(Modifier.height(20.dp))
+                ShimmerBox(Modifier.width(180.dp).height(10.dp), corner = 5)
+                Spacer(Modifier.height(10.dp))
+                ShimmerBox(Modifier.width(120.dp).height(10.dp), corner = 5)
+            }
         }
         return
     }
@@ -122,7 +143,14 @@ fun NyaayNavGraph(container: AppContainer) {
         else -> homeFor(currentUser!!.role)
     }
 
-    NavHost(navController = navController, startDestination = startDestination) {
+    NavHost(
+        navController = navController,
+        startDestination = startDestination,
+        enterTransition = { fadeIn(tween(220)) + slideInHorizontally(tween(220)) { it / 10 } },
+        exitTransition = { fadeOut(tween(160)) },
+        popEnterTransition = { fadeIn(tween(220)) },
+        popExitTransition = { fadeOut(tween(160)) + slideOutHorizontally(tween(220)) { it / 10 } }
+    ) {
         composable(Routes.LanguageSelect) {
             LanguageSelectScreen(vm = authVm, onDone = { navController.navigate(Routes.PhoneAuth) })
         }

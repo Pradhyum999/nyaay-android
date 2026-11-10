@@ -30,7 +30,7 @@ internal fun EngageAdvocateSheet(lawyer: UserEntity, vm: InquiryViewModel, cases
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        confirmButton = { Button(onClick = { vm.engage(lawyer, subject, message, attachBrief, selectedCaseId); onDismiss() }, colors = ButtonDefaults.buttonColors(containerColor = GoldPrimary)) { Text("Send", color = OnPrimary, fontWeight = FontWeight.Bold) } },
+        confirmButton = { Button(onClick = { vm.engage(lawyer, subject, message, attachBrief, selectedCaseId); onDismiss() }, enabled = message.isNotBlank(), colors = ButtonDefaults.buttonColors(containerColor = GoldPrimary)) { Text("Send", color = OnPrimary, fontWeight = FontWeight.Bold) } },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel", color = TextSub) } },
         title = { Text("Reach out to ${lawyer.name}") },
         text = {
@@ -92,7 +92,7 @@ fun LawyerProfileScreen(uid: String, authVm: AuthViewModel, consVm: Consultation
                 Button(onClick = {
                     val citizen = me
                     if (citizen != null) consVm.request(citizen, l, notes, 500.0) { id -> onRequested(id) }
-                }, modifier = Modifier.fillMaxWidth().height(52.dp), colors = ButtonDefaults.buttonColors(containerColor = GoldPrimary), shape = RoundedCornerShape(14.dp)) {
+                }, enabled = notes.isNotBlank(), modifier = Modifier.fillMaxWidth().height(52.dp), colors = ButtonDefaults.buttonColors(containerColor = GoldPrimary), shape = RoundedCornerShape(14.dp)) {
                     Text("Request Consultation · ₹500", color = OnPrimary, fontWeight = FontWeight.Bold)
                 }
             }

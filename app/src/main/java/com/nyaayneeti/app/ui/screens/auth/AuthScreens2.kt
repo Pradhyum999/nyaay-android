@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.sp
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
+import com.nyaayneeti.app.BuildConfig
 import com.nyaayneeti.app.R
 import com.nyaayneeti.app.ui.components.NyaayTopAppBar
 import com.nyaayneeti.app.ui.theme.*
@@ -133,9 +134,11 @@ fun PhoneAuthScreen(vm: AuthViewModel, onDone: () -> Unit, onBack: () -> Unit) {
                     if (loading) CircularProgressIndicator(Modifier.size(20.dp), color = OnPrimary)
                     else Text("Verify & Continue", color = OnPrimary, fontWeight = FontWeight.Bold)
                 }
-                Spacer(Modifier.height(12.dp))
-                TextButton(onClick = { vm.onOtp("123456") }, modifier = Modifier.align(Alignment.CenterHorizontally)) {
-                    Text("Auto-fill 123456", color = GoldPrimary, fontSize = 12.sp)
+                if (BuildConfig.DEBUG) {
+                    Spacer(Modifier.height(12.dp))
+                    TextButton(onClick = { vm.onOtp("123456") }, modifier = Modifier.align(Alignment.CenterHorizontally)) {
+                        Text("Auto-fill 123456 (debug)", color = GoldPrimary, fontSize = 12.sp)
+                    }
                 }
             }
 

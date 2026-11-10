@@ -75,25 +75,32 @@ class CaseRepository(
     }
 
     suspend fun toggleTask(caseId: String, taskId: String) {
-        taskDao.get(taskId)?.let { taskDao.update(it.copy(isCompleted = !it.isCompleted)) }
+        taskDao.get(taskId)?.let { t ->
+            val updated = t.copy(isCompleted = !t.isCompleted)
+            taskDao.update(updated)
+            cloud?.pushTask(updated)
+        }
     }
 
     suspend fun addTask(caseId: String, title: String, assignedTo: String) {
-        taskDao.insert(CaseTaskEntity(id = UUID.randomUUID().toString(), caseId = caseId, title = title, assignedTo = assignedTo))
+        val task = CaseTaskEntity(id = UUID.randomUUID().toString(), caseId = caseId, title = title, assignedTo = assignedTo)
+        taskDao.insert(task)
+        cloud?.pushTask(task)
     }
 
     suspend fun addNote(caseId: String, content: String, author: UserEntity, isPrivate: Boolean) {
-        noteDao.insert(
-            CaseNoteEntity(
-                id = UUID.randomUUID().toString(), caseId = caseId, content = content,
-                authorUid = author.uid, authorName = author.name, isPrivate = isPrivate
-            )
+        val note = CaseNoteEntity(
+            id = UUID.randomUUID().toString(), caseId = caseId, content = content,
+            authorUid = author.uid, authorName = author.name, isPrivate = isPrivate
         )
+        noteDao.insert(note)
+        cloud?.pushNote(note)
         addTimeline(caseId, "note", "Note added", "${author.name} added a note.", author.name)
     }
 
     suspend fun addDocument(caseId: String, doc: DocumentEntity) {
         documentDao.insert(doc)
+        cloud?.pushDocument(doc)
         addTimeline(caseId, "doc", "Document uploaded", "${doc.name} was added.", "System")
     }
 
@@ -117,13 +124,13 @@ class CaseRepository(
 
     suspend fun addHearing(caseId: String, courtNumber: String, itemNumber: Int, date: Long, time: String, purpose: String) {
         val case = caseDao.get(caseId) ?: return
-        hearingDao.insert(
-            HearingEntity(
-                id = UUID.randomUUID().toString(), caseId = caseId, caseNumber = case.caseNumber,
-                courtNumber = courtNumber, itemNumber = itemNumber, stage = case.stage.name,
-                hearingDate = date, hearingTime = time, purpose = purpose
-            )
+        val hearing = HearingEntity(
+            id = UUID.randomUUID().toString(), caseId = caseId, caseNumber = case.caseNumber,
+            courtNumber = courtNumber, itemNumber = itemNumber, stage = case.stage.name,
+            hearingDate = date, hearingTime = time, purpose = purpose
         )
+        hearingDao.insert(hearing)
+        cloud?.pushHearing(hearing)
         caseDao.upsert(case.copy(nextHearingDate = date, updatedAt = System.currentTimeMillis()))
         cloud?.pushCase(case.copy(nextHearingDate = date, updatedAt = System.currentTimeMillis()))
         addTimeline(caseId, "hearing", "Hearing scheduled", "Hearing on $time in $courtNumber (item #$itemNumber).", "Advocate")
@@ -213,13 +220,13 @@ class CaseRepository(
             return Result.failure(IllegalArgumentException("A hearing already exists at this date & time"))
         }
         val case = caseDao.get(caseId) ?: return Result.failure(IllegalArgumentException("Case not found"))
-        hearingDao.insert(
-            HearingEntity(
-                id = UUID.randomUUID().toString(), caseId = caseId, caseNumber = case.caseNumber,
-                courtNumber = courtNumber, itemNumber = itemNumber, stage = case.stage.name,
-                hearingDate = date, hearingTime = time, purpose = purpose, judgeName = judge
-            )
+        val hearing = HearingEntity(
+            id = UUID.randomUUID().toString(), caseId = caseId, caseNumber = case.caseNumber,
+            courtNumber = courtNumber, itemNumber = itemNumber, stage = case.stage.name,
+            hearingDate = date, hearingTime = time, purpose = purpose, judgeName = judge
         )
+        hearingDao.insert(hearing)
+        cloud?.pushHearing(hearing)
         val updated = case.copy(nextHearingDate = date, updatedAt = System.currentTimeMillis())
         caseDao.upsert(updated)
         cloud?.pushCase(updated)
@@ -230,10 +237,12 @@ class CaseRepository(
 
     suspend fun logOrder(hearingId: String, status: HearingStatus, order: String) {
         hearingDao.logOrder(hearingId, status, order)
+        hearingDao.get(hearingId)?.let { cloud?.pushHearing(it.copy(status = status, orderNotes = order)) }
     }
 
     suspend fun verifyDocument(docId: String, status: DocumentStatus) {
         documentDao.setStatus(docId, status)
+        documentDao.get(docId)?.let { cloud?.pushDocument(it.copy(status = status)) }
     }
 
     suspend fun addInvoice(
@@ -267,11 +276,11 @@ class CaseRepository(
     }
 
     private suspend fun addTimeline(caseId: String, type: String, title: String, desc: String, actor: String) {
-        timelineDao.insert(
-            TimelineEventEntity(
-                id = UUID.randomUUID().toString(), caseId = caseId, type = type,
-                titleEn = title, descriptionEn = desc, actor = actor
-            )
+        val event = TimelineEventEntity(
+            id = UUID.randomUUID().toString(), caseId = caseId, type = type,
+            titleEn = title, descriptionEn = desc, actor = actor
         )
+        timelineDao.insert(event)
+        cloud?.pushTimeline(event)
     }
 }

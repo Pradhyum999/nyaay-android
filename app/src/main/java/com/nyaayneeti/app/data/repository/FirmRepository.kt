@@ -1,6 +1,7 @@
 package com.nyaayneeti.app.data.repository
 
 import com.nyaayneeti.app.data.firebase.CloudSync
+import com.nyaayneeti.app.data.firebase.pushInvitation
 import com.nyaayneeti.app.data.local.CaseDao
 import com.nyaayneeti.app.data.local.FirmDao
 import com.nyaayneeti.app.data.local.InvitationDao
@@ -38,6 +39,7 @@ class FirmRepository(
         }
         val inv = InvitationEntity(id = UUID.randomUUID().toString(), firmId = firmId, email = normalized, firmRole = firmRole)
         invitationDao.upsert(inv)
+        cloud?.pushInvitation(inv)
         return Result.success(inv)
     }
 
@@ -48,6 +50,7 @@ class FirmRepository(
         userDao.upsert(updated)
         cloud?.pushUser(updated)
         invitationDao.setStatus(inv.id, InvitationStatus.ACCEPTED)
+        cloud?.pushInvitation(inv.copy(status = InvitationStatus.ACCEPTED))
         notifications.notify(updated.uid, NotificationType.SYSTEM, "Joined firm", "Your profile is now linked to your firm.")
         return updated
     }

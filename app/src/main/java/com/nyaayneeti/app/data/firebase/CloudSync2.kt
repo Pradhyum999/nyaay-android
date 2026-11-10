@@ -14,14 +14,14 @@ fun CloudSync.pushPost(p: PostEntity) {
 }
 
 fun CloudSync.pushComment(c: CommentEntity) {
-    db.push("posts/${c.postId}/comments", c.id, hashMapOf(
+    db.push("comments", c.id, hashMapOf(
         "id" to c.id, "postId" to c.postId, "authorUid" to c.authorUid,
         "authorName" to c.authorName, "body" to c.body, "parentId" to c.parentId, "createdAt" to c.createdAt
     ))
 }
 
 fun CloudSync.pushNotification(n: NotificationEntity) {
-    db.push("users/${n.uid}/notifications", n.id, hashMapOf(
+    db.push("notifications", n.id, hashMapOf(
         "id" to n.id, "uid" to n.uid, "type" to n.type.name, "title" to n.title,
         "body" to n.body, "deepLink" to n.deepLink, "isRead" to n.isRead, "createdAt" to n.createdAt
     ))
@@ -63,7 +63,36 @@ fun CloudSync.pushInquiry(i: InquiryEntity) {
     db.push("inquiries", i.id, hashMapOf(
         "id" to i.id, "lawyerUid" to i.lawyerUid, "clientUid" to i.clientUid, "clientName" to i.clientName,
         "subject" to i.subject, "message" to i.message, "attachAIBrief" to i.attachAIBrief,
-        "status" to i.status.name, "createdAt" to i.createdAt
+        "caseId" to i.caseId, "status" to i.status.name, "createdAt" to i.createdAt
+    ))
+}
+
+fun CloudSync.pushInvitation(i: InvitationEntity) {
+    db.push("invitations", i.id, hashMapOf(
+        "id" to i.id, "firmId" to i.firmId, "email" to i.email,
+        "firmRole" to i.firmRole.name, "status" to i.status.name, "createdAt" to i.createdAt
+    ))
+}
+
+fun CloudSync.pushVerification(v: VerificationRequestEntity) {
+    db.push("verification_requests", v.id, hashMapOf(
+        "id" to v.id, "uid" to v.uid, "role" to v.role.name, "name" to v.name,
+        "documentType" to v.documentType, "documentUrl" to v.documentUrl, "maskedIdNumber" to v.maskedIdNumber,
+        "status" to v.status.name, "submittedAt" to v.submittedAt,
+        "rejectionReason" to v.rejectionReason, "verifiedBy" to v.verifiedBy, "verifiedAt" to v.verifiedAt
+    ))
+}
+
+fun CloudSync.pushReport(r: ReportEntity) {
+    db.push("reports", r.id, hashMapOf(
+        "id" to r.id, "reporterUid" to r.reporterUid, "targetUid" to r.targetUid,
+        "targetName" to r.targetName, "reason" to r.reason, "status" to r.status.name, "createdAt" to r.createdAt
+    ))
+}
+
+fun CloudSync.pushBlock(b: BlockEntity) {
+    db.push("blocks", b.id, hashMapOf(
+        "id" to b.id, "blockerUid" to b.blockerUid, "blockedUid" to b.blockedUid, "createdAt" to b.createdAt
     ))
 }
 

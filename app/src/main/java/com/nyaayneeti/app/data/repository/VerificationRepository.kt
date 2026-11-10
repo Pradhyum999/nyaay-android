@@ -1,5 +1,7 @@
 package com.nyaayneeti.app.data.repository
 
+import com.nyaayneeti.app.data.firebase.CloudSync
+import com.nyaayneeti.app.data.firebase.pushVerification
 import com.nyaayneeti.app.data.local.UserDao
 import com.nyaayneeti.app.data.local.VerificationDao
 import com.nyaayneeti.app.data.model.*
@@ -8,7 +10,8 @@ import java.util.UUID
 class VerificationRepository(
     private val verificationDao: VerificationDao,
     private val userDao: UserDao,
-    private val notifications: NotificationRepository
+    private val notifications: NotificationRepository,
+    private val cloud: CloudSync? = null
 ) {
     fun observeAll() = verificationDao.observeAll()
 
@@ -17,30 +20,40 @@ class VerificationRepository(
         if (existing?.status == VerificationStatus.PENDING) {
             return Result.failure(IllegalArgumentException("A verification request is already pending review"))
         }
-        verificationDao.upsert(
-            VerificationRequestEntity(
-                id = UUID.randomUUID().toString(),
-                uid = user.uid, role = user.role, name = user.name,
-                documentType = documentType, maskedIdNumber = maskedIdNumber,
-                status = VerificationStatus.PENDING
-            )
+        val request = VerificationRequestEntity(
+            id = UUID.randomUUID().toString(),
+            uid = user.uid, role = user.role, name = user.name,
+            documentType = documentType, maskedIdNumber = maskedIdNumber,
+            status = VerificationStatus.PENDING
         )
-        userDao.upsert(user.copy(verificationStatus = VerificationStatus.PENDING))
+        verificationDao.upsert(request)
+        cloud?.pushVerification(request)
+        val updatedUser = user.copy(verificationStatus = VerificationStatus.PENDING)
+        userDao.upsert(updatedUser)
+        cloud?.pushUser(updatedUser)
         return Result.success(Unit)
     }
 
     suspend fun approve(request: VerificationRequestEntity, adminName: String) {
-        verificationDao.setDecision(request.id, VerificationStatus.VERIFIED, null, adminName, System.currentTimeMillis())
+        val updatedRequest = request.copy(status = VerificationStatus.VERIFIED, verifiedBy = adminName, verifiedAt = System.currentTimeMillis())
+        verificationDao.upsert(updatedRequest)
+        cloud?.pushVerification(updatedRequest)
         userDao.getById(request.uid)?.let { u ->
-            userDao.upsert(u.copy(verificationStatus = VerificationStatus.VERIFIED))
+            val updatedUser = u.copy(verificationStatus = VerificationStatus.VERIFIED)
+            userDao.upsert(updatedUser)
+            cloud?.pushUser(updatedUser)
             notifications.notify(u.uid, NotificationType.VERIFICATION, "Verification approved", "Your advocate profile is now verified.", "verification")
         }
     }
 
     suspend fun reject(request: VerificationRequestEntity, reason: String, adminName: String) {
-        verificationDao.setDecision(request.id, VerificationStatus.REJECTED, reason, adminName, System.currentTimeMillis())
+        val updatedRequest = request.copy(status = VerificationStatus.REJECTED, rejectionReason = reason, verifiedBy = adminName, verifiedAt = System.currentTimeMillis())
+        verificationDao.upsert(updatedRequest)
+        cloud?.pushVerification(updatedRequest)
         userDao.getById(request.uid)?.let { u ->
-            userDao.upsert(u.copy(verificationStatus = VerificationStatus.REJECTED))
+            val updatedUser = u.copy(verificationStatus = VerificationStatus.REJECTED)
+            userDao.upsert(updatedUser)
+            cloud?.pushUser(updatedUser)
             notifications.notify(u.uid, NotificationType.VERIFICATION, "Verification rejected", reason.ifBlank { "Your verification was rejected." }, "verification")
         }
     }

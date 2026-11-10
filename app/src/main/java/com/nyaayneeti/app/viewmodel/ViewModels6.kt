@@ -27,6 +27,10 @@ class InquiryViewModel(
     val feedback = _feedback.asStateFlow()
 
     fun engage(lawyer: UserEntity, subject: String, message: String, attachBrief: Boolean, caseId: String? = null) {
+        if (message.isBlank()) {
+            _feedback.value = "Please describe your matter first"
+            return
+        }
         val client = auth.currentUser.value ?: return
         viewModelScope.launch {
             inquiryRepo.engage(lawyer, client, subject, message, attachBrief, caseId)

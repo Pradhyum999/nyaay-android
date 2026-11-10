@@ -19,42 +19,44 @@ service cloud.firestore {
 
     // ---- Cases ----
     match /cases/{caseId} {
-      allow read: if signedIn()
-        && (resource.data.clientUid == request.auth.uid || resource.data.lawyerUid == request.auth.uid);
+      allow read: if signedIn();
       allow create: if signedIn() && request.resource.data.clientUid == request.auth.uid;
       allow update, delete: if signedIn()
         && (resource.data.clientUid == request.auth.uid || resource.data.lawyerUid == request.auth.uid);
     }
 
+    // ---- Case sub-entities (timeline, tasks, notes, docs, hearings) ----
+    match /case_timeline_events/{id} { allow read, write: if signedIn(); }
+    match /case_tasks/{id} { allow read, write: if signedIn(); }
+    match /case_notes/{id} { allow read, write: if signedIn(); }
+    match /documents/{id} { allow read, write: if signedIn(); }
+    match /hearings/{id} { allow read, write: if signedIn(); }
+
     // ---- Chat ----
     match /conversations/{convoId} {
-      allow read, write: if signedIn()
-        && (resource.data.userA == request.auth.uid || resource.data.userB == request.auth.uid);
+      allow read: if signedIn();
       allow create: if signedIn()
         && (request.resource.data.userA == request.auth.uid || request.resource.data.userB == request.auth.uid);
+      allow update: if signedIn()
+        && (resource.data.userA == request.auth.uid || resource.data.userB == request.auth.uid);
     }
-    match /conversations/{convoId}/messages/{msgId} {
-      allow read: if signedIn()
-        && (resource.data.senderUid == request.auth.uid || resource.data.receiverUid == request.auth.uid);
+    match /messages/{msgId} {
+      allow read: if signedIn();
       allow create: if signedIn() && request.resource.data.senderUid == request.auth.uid;
       allow update: if signedIn() && resource.data.receiverUid == request.auth.uid;
     }
 
     // ---- Consultations ----
     match /consultations/{id} {
-      allow read: if signedIn()
-        && (resource.data.citizenUid == request.auth.uid || resource.data.lawyerUid == request.auth.uid);
+      allow read: if signedIn();
       allow create: if signedIn() && request.resource.data.citizenUid == request.auth.uid;
       allow update: if signedIn()
         && (resource.data.citizenUid == request.auth.uid || resource.data.lawyerUid == request.auth.uid);
     }
 
-    // ---- Internships ----
-    match /internships/{id} {
-      allow read: if signedIn();
-      allow create, update, delete: if signedIn();
-    }
-    match /internships/{id}/applications/{appId} {
+    // ---- Internships & Applications ----
+    match /internships/{id} { allow read, write: if signedIn(); }
+    match /applications/{appId} {
       allow read: if signedIn();
       allow create: if signedIn() && request.resource.data.studentUid == request.auth.uid;
       allow update, delete: if signedIn();
@@ -66,15 +68,16 @@ service cloud.firestore {
       allow create: if signedIn() && request.resource.data.authorUid == request.auth.uid;
       allow update, delete: if signedIn() && resource.data.authorUid == request.auth.uid;
     }
-    match /posts/{id}/comments/{commentId} {
+    match /comments/{commentId} {
       allow read: if signedIn();
       allow create: if signedIn() && request.resource.data.authorUid == request.auth.uid;
       allow delete: if signedIn() && resource.data.authorUid == request.auth.uid;
     }
 
-    // ---- Notifications (per-user subcollection) ----
-    match /users/{uid}/notifications/{id} {
-      allow read, create, update, delete: if signedIn() && request.auth.uid == uid;
+    // ---- Notifications ----
+    match /notifications/{id} {
+      allow read: if signedIn();
+      allow create, update, delete: if signedIn() && request.resource.data.uid == request.auth.uid;
     }
 
     // ---- Reviews ----
@@ -85,12 +88,41 @@ service cloud.firestore {
 
     // ---- Subscriptions & Payments ----
     match /subscriptions/{id} {
-      allow read, create, update: if signedIn() && request.resource.data.ownerUid == request.auth.uid;
+      allow read: if signedIn();
+      allow create, update: if signedIn() && request.resource.data.ownerUid == request.auth.uid;
     }
     match /payments/{id} {
-      allow read: if signedIn()
-        && (resource.data.payerUid == request.auth.uid || resource.data.payeeUid == request.auth.uid);
+      allow read: if signedIn();
       allow create: if signedIn() && request.resource.data.payerUid == request.auth.uid;
     }
+
+    // ---- Invoices ----
+    match /invoices/{id} {
+      allow read: if signedIn();
+      allow create, update: if signedIn();
+    }
+
+    // ---- Inquiries ----
+    match /inquiries/{id} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.clientUid == request.auth.uid;
+      allow update: if signedIn()
+        && (resource.data.clientUid == request.auth.uid || resource.data.lawyerUid == request.auth.uid);
+    }
+
+    // ---- Invitations, Verification, Reports, Blocks ----
+    match /invitations/{id} { allow read, write: if signedIn(); }
+    match /verification_requests/{id} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
+      allow update: if signedIn();
+    }
+    match /reports/{id} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.reporterUid == request.auth.uid;
+      allow update: if signedIn();
+    }
+    match /blocks/{id} { allow read, write: if signedIn(); }
   }
 }
+
